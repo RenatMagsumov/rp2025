@@ -13,6 +13,8 @@ export default function ProfileCard() {
                     <li>Sleeping</li>
                 </ul>
 
+                <hr />
+
                 <form className="contact-form" onSubmit={(e) => e.preventDefault()}>
                     <label>
                         Email
