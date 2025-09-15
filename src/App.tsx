@@ -1,7 +1,13 @@
-import Counter from "./components/counter"
+import Counter from "./components/Counter";
+import ProfileCard from "./components/ProfileCard";
 
 function App() {
-  return <Counter />
+  return (
+    <>
+      <Counter />
+      <ProfileCard />
+    </>
+  );
 }
 
 export default App;
