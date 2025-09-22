@@ -10,15 +10,15 @@ import Button from "@mui/material/Button";
 function Layout() {
     return (
         <Box sx={{ flexGrow: 1 }}>
-            <AppBar position="static">
+            <AppBar position="static" sx={{ width: "100%" }}>
                 <Toolbar>
-                    <Button variant="contained" component={Link} to="/">
+                    <Button color="inherit" component={Link} to="/">
                         Home
                     </Button>
-                    <Button variant="contained" component={Link} to="/profile">
+                    <Button color="inherit" component={Link} to="/profile">
                         Profile
                     </Button>
-                    <Button variant="contained" component={Link} to="/contact">
+                    <Button color="inherit" component={Link} to="/contact">
                         Contact
                     </Button>
                 </Toolbar>
