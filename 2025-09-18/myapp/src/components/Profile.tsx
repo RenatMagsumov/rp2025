@@ -7,6 +7,8 @@ import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
 import AlarmIcon from '@mui/icons-material/Alarm';
+import Dice from "./Dice";
+
 
 export default function Profile() {
     return (
@@ -42,6 +44,10 @@ export default function Profile() {
                     />
                     <Button variant="contained" endIcon={<AlarmIcon />} color="info">Contact Me</Button>
                 </Stack>
+            </Box>
+
+            <Box sx={{ mt: 4 }}>
+                <Dice />
             </Box>
         </Container>
     );
