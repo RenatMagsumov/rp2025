@@ -1,0 +1,26 @@
+/* Base style for nav buttons */
+.nav-button {
+  font-weight: 500;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  transition: all 0.2s ease;
+}
+
+/* Different colors */
+.nav-home {
+  color: yellow;
+}
+
+.nav-card {
+  color: #4caf50;
+}
+
+.nav-profile {
+  color: orange;
+}
+
+/* Active state (underline) */
+.nav-active {
+  font-weight: 700;
+  border-bottom: 2px solid currentColor;
+}
