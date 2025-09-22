@@ -3,8 +3,14 @@ import ReactDOM from "react-dom/client";
 import AppRouter from "./router";
 import "./index.css";
 
+import { ThemeProvider, CssBaseline } from "@mui/material";
+import { theme } from "./theme";
+
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <AppRouter />
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <AppRouter />
+    </ThemeProvider>
   </React.StrictMode>
 );
