@@ -2,18 +2,31 @@ import { createHashRouter, RouterProvider, Outlet, Link } from "react-router-dom
 import Home from "./components/Home";
 import Profile from "./components/Profile";
 import Contact from "./components/Contact";
+import AppBar from "@mui/material/AppBar";
+import Box from "@mui/material/Box";
+import Toolbar from "@mui/material/Toolbar";
+import Button from "@mui/material/Button";
 
 function Layout() {
     return (
-        <div style={{ padding: 16 }}>
-            <nav style={{ display: "flex", gap: 12 }}>
-                <Link to="/">Home</Link>
-                <Link to="/profile">Profile</Link>
-                <Link to="/contact">Contact</Link>
-            </nav>
-            <hr />
-            <Outlet />
-        </div>
+        <Box sx={{ flexGrow: 1 }}>
+            <AppBar position="static">
+                <Toolbar>
+                    <Button variant="contained" component={Link} to="/">
+                        Home
+                    </Button>
+                    <Button variant="contained" component={Link} to="/profile">
+                        Profile
+                    </Button>
+                    <Button variant="contained" component={Link} to="/contact">
+                        Contact
+                    </Button>
+                </Toolbar>
+            </AppBar>
+            <Box sx={{ p: 2 }}>
+                <Outlet />
+            </Box>
+        </Box>
     );
 }
 
