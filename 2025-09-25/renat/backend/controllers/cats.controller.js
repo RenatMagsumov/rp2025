@@ -23,7 +23,11 @@ exports.create = (req, res) => {
 };
 
 exports.read = (req, res) => {
-    res.send(cats);
+    exports.read = (req, res) => {
+        const visibleCats = cats.filter(cat => cat.deleted !== true);
+        res.send(visibleCats);
+    };
+
 };
 
 exports.update = (req, res) => { };
