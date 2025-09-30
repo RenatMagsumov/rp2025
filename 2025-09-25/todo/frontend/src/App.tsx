@@ -1,14 +1,21 @@
-import "./App.css";
+import { useState } from "react";
 import Todos from "../components/Todos";
-import SubmitTodo from "../components/SubmitTodo";
+import "./App.css";
+import AdminTodos from "../components/AdminTodos";
+import { Button, Stack } from "@mui/material";
 
-function App() {
+export default function App() {
+  const [showAdmin, setShowAdmin] = useState(false);
+
   return (
-    <>
-      <Todos />
-      <SubmitTodo />
-    </>
+    <div style={{ padding: 16 }}>
+      <Stack spacing={2}>
+        <Todos />
+        <Button variant="outlined" onClick={() => setShowAdmin(!showAdmin)}>
+          {showAdmin ? "Hide Admin Todos" : "Show Admin Todos"}
+        </Button>
+        {showAdmin && <AdminTodos />}
+      </Stack>
+    </div>
   );
 }
-
-export default App;
