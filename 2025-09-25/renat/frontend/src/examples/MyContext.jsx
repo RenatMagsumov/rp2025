@@ -1,16 +1,24 @@
-import React, { useState } from "react";
+import React, { useState, createContext, useContext } from "react";
 
-const MyPropDrilling = () => {
+const UserContext = createContext(null);
+
+const MyContext = () => {
     const [username] = useState("Renat");
-    return <Parent username={username} />;
+
+    return (
+        <UserContext.Provider value={username}>
+            <Parent />
+        </UserContext.Provider>
+    );
 };
 
-const Parent = ({ username }) => {
-    return <Child username={username} />;
+const Parent = () => {
+    return <Child />;
 };
 
-const Child = ({ username }) => {
+const Child = () => {
+    const username = useContext(UserContext);
     return <div>Hello, {username}!</div>;
 };
 
-export default MyPropDrilling;
+export default MyContext;
