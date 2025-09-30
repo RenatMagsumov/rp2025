@@ -74,7 +74,7 @@ export default function Todos() {
                 {items.map((t) => (
                     <ListItem key={t.id} divider>
                         <ListItemText
-                            primary={`${t.title}${t.completed ? " Yes" : ""}`}
+                            primary={`${t.title}${t.completed ? " ✅" : ""}`}
                             secondary={`id: ${t.id}`}
                         />
                         <Stack direction="row" spacing={1}>
