@@ -42,6 +42,39 @@ exports.read = (_req, res) => {
     return res.send(visibleCats);
 };
 
-exports.update = (req, res) => { };
+exports.update = (req, res) => {
+    const { id, name } = req.body;
 
-exports.delete = (req, res) => { };
+    if (!id) {
+        return res.status(400).json({ message: "Field 'id' is required" });
+    }
+
+    const idx = cats.findIndex((c) => c.id === id);
+    if (idx === -1) {
+        return res.status(404).json({ message: "Cat not found" });
+    }
+
+    if (typeof name === "string" && name.trim().length > 0) {
+        cats[idx].name = name.trim();
+    }
+
+    cats[idx].updatedAt = Date.now();
+    return res.json(cats[idx]);
+};
+
+exports.delete = (req, res) => {
+    const { id } = req.body;
+
+    if (!id) {
+        return res.status(400).json({ message: "Field 'id' is required" });
+    }
+
+    const idx = cats.findIndex((c) => c.id === id);
+    if (idx === -1) {
+        return res.status(404).json({ message: "Cat not found" });
+    }
+
+    cats[idx].deleted = true; // soft-delete
+    cats[idx].updatedAt = Date.now();
+    return res.json(cats[idx]);
+};
