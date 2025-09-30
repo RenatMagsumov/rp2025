@@ -16,7 +16,7 @@ export default function AdminTodos() {
     const [items, setItems] = useState<Todo[]>([]);
 
     const load = async () => {
-        const res = await fetch(`${API}?includeDeleted=true`);
+        const res = await fetch(`${API}?includeDeleted=true`, { cache: "no-store" });
         const data = await res.json();
         setItems(data);
     };
@@ -26,13 +26,23 @@ export default function AdminTodos() {
     }, []);
 
     const toggleDeleted = async (id: string) => {
-        await fetch(`${API}/${id}/toggle-deleted`, { method: "PATCH" });
-        load();
+        const prev = items;
+        setItems((curr) =>
+            curr.map((t) => (t.id === id ? { ...t, deleted: !t.deleted } : t))
+        );
+        try {
+            await fetch(`${API}/${id}/toggle-deleted`, {
+                method: "PATCH",
+                headers: { "Cache-Control": "no-cache" }
+            });
+        } catch {
+            setItems(prev);
+        }
     };
 
     return (
         <List>
-            {items.map(t => (
+            {items.map((t) => (
                 <ListItem key={t.id} divider>
                     <ListItemText
                         primary={`${t.title} ${t.deleted ? "(deleted)" : ""}`}
