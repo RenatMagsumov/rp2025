@@ -17,3 +17,12 @@ export async function addTodo(formData: FormData) {
     await supabase.from('todos').insert({ title, user_id: user.id });
     revalidatePath('/todo');
 }
+
+/**
+ * Server Action: delete a todo by id.
+ */
+export async function deleteTodo(id: string) {
+    const supabase = await createClient();
+    await supabase.from('todos').delete().eq('id', id);
+    revalidatePath('/todo');
+}
