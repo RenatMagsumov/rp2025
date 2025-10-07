@@ -14,3 +14,9 @@ export async function createNote(formData: FormData) {
     await supa.from('notes').insert({ content, user_id: user.id });
     revalidatePath('/notes');
 }
+
+export async function deleteNote(id: string) {
+    const supa = await createClient();
+    await supa.from('notes').delete().eq('id', id);
+    revalidatePath('/notes');
+}
