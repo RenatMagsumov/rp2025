@@ -47,9 +47,33 @@ export async function POST(request: Request) {
 }
 
 
-export async function PUT() {
-    return NextResponse.json({ message: 'PUT /api/todos — not implemented yet' });
+export async function PUT(request: Request) {
+    const supabase = await createClient();
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user)
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+    const body = await request.json().catch(() => null) as { id?: string; title?: string } | null;
+    if (!body?.id)
+        return NextResponse.json({ error: 'ID required' }, { status: 400 });
+
+    const { data, error } = await supabase
+        .from('todos')
+        .update({ title: body.title })
+        .eq('id', body.id)
+        .eq('user_id', user.id)
+        .select('*')
+        .maybeSingle();
+
+    if (error)
+        return NextResponse.json({ error: error.message }, { status: 500 });
+    if (!data)
+        return NextResponse.json({ error: 'Not found' }, { status: 404 });
+
+    return NextResponse.json(data);
 }
+
 
 export async function DELETE() {
     return NextResponse.json({ message: 'DELETE /api/todos — not implemented yet' });
