@@ -75,6 +75,26 @@ export async function PUT(request: Request) {
 }
 
 
-export async function DELETE() {
-    return NextResponse.json({ message: 'DELETE /api/todos — not implemented yet' });
+export async function DELETE(request: Request) {
+    const supabase = await createClient();
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user)
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+    const body = await request.json().catch(() => null) as { id?: string } | null;
+    if (!body?.id)
+        return NextResponse.json({ error: 'ID required' }, { status: 400 });
+
+    const { error } = await supabase
+        .from('todos')
+        .delete()
+        .eq('id', body.id)
+        .eq('user_id', user.id);
+
+    if (error)
+        return NextResponse.json({ error: error.message }, { status: 500 });
+
+    return NextResponse.json({ ok: true });
 }
+
