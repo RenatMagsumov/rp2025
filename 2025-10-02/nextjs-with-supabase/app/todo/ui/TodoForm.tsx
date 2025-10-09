@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-type Todo = { id: string; title: string; created_at?: string };
+//type Todo = { id: string; title: string; created_at?: string };
 type ApiError = { error?: string };
 
 export function TodoForm() {

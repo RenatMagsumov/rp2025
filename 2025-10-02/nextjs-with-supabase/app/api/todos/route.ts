@@ -57,10 +57,28 @@ export async function PUT(request: Request) {
 
     const body = await request.json().catch(() => null) as { id?: string; title?: string } | null;
     const id = idFromQuery ?? body?.id ?? null;
-    const title = body?.title ?? '';
+    const title = (body?.title ?? '').trim();
 
     if (!id) return NextResponse.json({ error: 'ID required' }, { status: 400 });
-    if (!title.trim()) return NextResponse.json({ error: 'Title required' }, { status: 400 });
+    if (!title) return NextResponse.json({ error: 'Title required' }, { status: 400 });
+
+
+    const { data: existing, error: selErr } = await supabase
+        .from('todos')
+        .select('id, user_id')
+        .eq('id', id)
+        .maybeSingle();
+
+    if (selErr) {
+        console.error('PUT /api/todos select error:', selErr);
+        return NextResponse.json({ error: selErr.message }, { status: 500 });
+    }
+    if (!existing) {
+        return NextResponse.json({ error: 'Not found' }, { status: 404 });
+    }
+    if (existing.user_id !== user.id) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
 
     const { data, error } = await supabase
         .from('todos')
@@ -70,10 +88,17 @@ export async function PUT(request: Request) {
         .select('*')
         .maybeSingle();
 
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-    if (!data) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+    if (error) {
+        console.error('PUT /api/todos update error:', error);
+        return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+    if (!data) {
+        return NextResponse.json({ error: 'Not found' }, { status: 404 });
+    }
+
     return NextResponse.json(data);
 }
+
 
 
 export async function DELETE(request: Request) {
