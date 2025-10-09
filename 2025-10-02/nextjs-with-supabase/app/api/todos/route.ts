@@ -21,9 +21,31 @@ export async function GET() {
 }
 
 
-export async function POST() {
-    return NextResponse.json({ message: 'POST /api/todos — not implemented yet' });
+export async function POST(request: Request) {
+    const supabase = await createClient();
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user)
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+    const body = await request.json().catch(() => null) as { title?: string } | null;
+    const title = (body?.title || '').trim();
+
+    if (!title)
+        return NextResponse.json({ error: 'Title required' }, { status: 400 });
+
+    const { data, error } = await supabase
+        .from('todos')
+        .insert([{ title, user_id: user.id }])
+        .select('*')
+        .single();
+
+    if (error)
+        return NextResponse.json({ error: error.message }, { status: 500 });
+
+    return NextResponse.json(data, { status: 201 });
 }
+
 
 export async function PUT() {
     return NextResponse.json({ message: 'PUT /api/todos — not implemented yet' });
