@@ -1,16 +1,11 @@
 import { createClient } from '@/lib/supabase/server';
 import { CreateNoteForm } from './ui/CreateNoteForm';
 import { NotesList } from './ui/NotesList';
+import type { Note } from './ui/NotesList';
 import { updateNote } from './actions';
 
 export const revalidate = 0; // fetch fresh data
 
-type Note = {
-    id: string;
-    title: string;
-    content?: string;
-    created_at?: string;
-};
 
 async function getNotes(): Promise<Note[]> {
     const supabase = await createClient();
