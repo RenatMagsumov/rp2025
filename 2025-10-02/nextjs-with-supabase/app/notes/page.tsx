@@ -1,67 +1,72 @@
 import { createClient } from '@/lib/supabase/server';
-import { createNote, updateNote, deleteNote } from './actions';
+import { CreateNoteForm } from './ui/CreateNoteForm';
+import { NotesList } from './ui/NotesList';
+import { updateNote } from './actions';
 
-export default async function NotesPage() {
+export const revalidate = 0; // fetch fresh data
+
+type Note = {
+    id: string;
+    title: string;
+    content?: string;
+    created_at?: string;
+};
+
+async function getNotes(): Promise<Note[]> {
     const supabase = await createClient();
-
     const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return [];
 
-    if (!user) return <p className="p-6 text-red-500">Please log in</p>;
-
-    const { data: notes } = await supabase
+    const { data } = await supabase
         .from('notes')
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
+    return data ?? [];
+}
+
+export default async function NotesPage() {
+    const notes = await getNotes();
+
     return (
-        <div className="p-6 space-y-4 max-w-2xl">
-            <h1 className="text-xl font-semibold">Notes</h1>
+        <div className="max-w-2xl mx-auto p-6 space-y-8">
+            <div>
+                <h1 className="text-2xl font-bold mb-4">NOTES</h1>
+                <CreateNoteForm />
+                <NotesList notes={notes} />
+            </div>
 
-            {/* Create new note */}
-            <form action={createNote} className="flex gap-2">
-                <input
-                    name="content"
-                    placeholder="New note..."
-                    className="flex-1 border rounded px-3 py-2"
-                />
-                <button type="submit" className="px-4 py-2 bg-black text-white rounded">
-                    Add
-                </button>
-            </form>
-
-            {/* Notes list */}
-            <ul className="space-y-3">
-                {notes?.map((note) => (
-                    <li key={note.id} className="border rounded p-3 space-y-2">
-                        <form action={updateNote} className="space-y-2">
-                            <input type="hidden" name="id" value={note.id} />
-                            <textarea
-                                name="content"
-                                defaultValue={note.content}
-                                className="w-full border rounded px-3 py-2"
-                            />
-                            <div className="flex justify-between">
-                                <button
-                                    type="submit"
-                                    className="px-3 py-1 rounded bg-blue-600 text-white"
-                                >
-                                    Save
-                                </button>
-                                <button
-                                    formAction={async () => {
-                                        'use server';
-                                        await deleteNote(note.id);
-                                    }}
-                                    className="px-3 py-1 rounded bg-red-600 text-white"
-                                >
-                                    Delete
-                                </button>
-                            </div>
-                        </form>
-                    </li>
-                ))}
-            </ul>
+            <div className="space-y-3">
+                <h2 className="text-lg font-semibold">Server-side inline edit (demo)</h2>
+                {(!notes || notes.length === 0) ? (
+                    <p className="text-gray-500">No notes yet.</p>
+                ) : (
+                    <ul className="space-y-2">
+                        {notes.map((note) => (
+                            <li key={note.id} className="border rounded-xl p-3">
+                                <form action={updateNote} className="flex gap-2 items-center w-full">
+                                    <input type="hidden" name="id" defaultValue={note.id} />
+                                    <input
+                                        name="title"
+                                        defaultValue={note.title}
+                                        className="flex-1 border rounded-xl px-3 py-2"
+                                        placeholder="Edit title"
+                                    />
+                                    <button
+                                        type="submit"
+                                        className="px-3 py-2 rounded-lg border"
+                                        aria-label="Save server-side"
+                                        title="Save (server action)"
+                                    >
+                                        Save (server)
+                                    </button>
+                                </form>
+                            </li>
+                        ))}
+                    </ul>
+                )}
+            </div>
         </div>
     );
 }
