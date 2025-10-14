@@ -5,8 +5,7 @@ export async function GET() {
     const supabase = await createClient();
 
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user)
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const { data, error } = await supabase
         .from('todos')
@@ -14,25 +13,18 @@ export async function GET() {
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
-    if (error)
-        return NextResponse.json({ error: error.message }, { status: 500 });
-
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     return NextResponse.json(data ?? []);
 }
 
-
 export async function POST(request: Request) {
     const supabase = await createClient();
-
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user)
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const body = await request.json().catch(() => null) as { title?: string } | null;
     const title = (body?.title || '').trim();
-
-    if (!title)
-        return NextResponse.json({ error: 'Title required' }, { status: 400 });
+    if (!title) return NextResponse.json({ error: 'Title required' }, { status: 400 });
 
     const { data, error } = await supabase
         .from('todos')
@@ -40,14 +32,11 @@ export async function POST(request: Request) {
         .select('*')
         .single();
 
-    if (error)
-        return NextResponse.json({ error: error.message }, { status: 500 });
-
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     return NextResponse.json(data, { status: 201 });
 }
 
-
-export async function PUT(request: Request) {
+async function updateTitle(request: Request) {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -62,22 +51,16 @@ export async function PUT(request: Request) {
     if (!id) return NextResponse.json({ error: 'ID required' }, { status: 400 });
     if (!title) return NextResponse.json({ error: 'Title required' }, { status: 400 });
 
-
+    // ensure belongs to the user (optional pre-check)
     const { data: existing, error: selErr } = await supabase
         .from('todos')
-        .select('id, user_id')
+        .select('id,user_id')
         .eq('id', id)
         .maybeSingle();
 
-    if (selErr) {
-        console.error('PUT /api/todos select error:', selErr);
-        return NextResponse.json({ error: selErr.message }, { status: 500 });
-    }
-    if (!existing) {
+    if (selErr) return NextResponse.json({ error: selErr.message }, { status: 500 });
+    if (!existing || existing.user_id !== user.id) {
         return NextResponse.json({ error: 'Not found' }, { status: 404 });
-    }
-    if (existing.user_id !== user.id) {
-        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     const { data, error } = await supabase
@@ -88,24 +71,25 @@ export async function PUT(request: Request) {
         .select('*')
         .maybeSingle();
 
-    if (error) {
-        console.error('PUT /api/todos update error:', error);
-        return NextResponse.json({ error: error.message }, { status: 500 });
-    }
-    if (!data) {
-        return NextResponse.json({ error: 'Not found' }, { status: 404 });
-    }
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (!data) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
     return NextResponse.json(data);
 }
 
+export async function PUT(request: Request) {
+    return updateTitle(request);
+}
 
+
+export async function PATCH(request: Request) {
+    return updateTitle(request);
+}
 
 export async function DELETE(request: Request) {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
 
     const url = new URL(request.url);
     let id = url.searchParams.get('id');
@@ -126,5 +110,3 @@ export async function DELETE(request: Request) {
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     return NextResponse.json({ ok: true });
 }
-
-
