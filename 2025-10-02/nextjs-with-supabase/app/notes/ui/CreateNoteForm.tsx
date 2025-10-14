@@ -1,30 +1,70 @@
 'use client';
-import { useFormStatus } from 'react-dom';
-import { createNote } from '../actions';
+
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+
+// type Note = { id: string; title: string; content?: string; created_at?: string };
+type ApiError = { error?: string };
 
 export function CreateNoteForm() {
+    const [title, setTitle] = useState('');
+    const [pending, setPending] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const router = useRouter();
+
+    async function handleSubmit(e: React.FormEvent) {
+        e.preventDefault();
+        if (!title.trim()) return;
+
+        setPending(true);
+        setError(null);
+
+        try {
+            const res = await fetch('/api/notes', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ title }), // при желании можно добавить content
+            });
+
+            const json: unknown = await res.json();
+
+            if (!res.ok) {
+                const msg =
+                    typeof json === 'object' &&
+                        json !== null &&
+                        'error' in json &&
+                        typeof (json as ApiError).error === 'string'
+                        ? (json as ApiError).error!
+                        : 'Failed to create';
+                throw new Error(msg);
+            }
+
+            // успешный кейс — обнуляем поле и рефрешим
+            setTitle('');
+            router.refresh();
+        } catch (err: unknown) {
+            setError(err instanceof Error ? err.message : 'Unknown error');
+        } finally {
+            setPending(false);
+        }
+    }
+
     return (
-        <form action={createNote} className="flex gap-2 mb-4">
+        <form onSubmit={handleSubmit} className="flex gap-2 mb-4">
             <input
-                name="content"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
                 placeholder="New note"
                 className="flex-1 border rounded-xl px-3 py-2"
             />
-            <SubmitBtn />
+            <button
+                type="submit"
+                disabled={pending}
+                className="px-4 py-2 rounded-xl border hover:shadow disabled:opacity-50"
+            >
+                {pending ? 'Adding…' : 'Add'}
+            </button>
+            {error && <span className="text-red-600 text-sm">{error}</span>}
         </form>
-    );
-}
-
-// Submit button with pending state from <form action=...>
-function SubmitBtn() {
-    const { pending } = useFormStatus();
-    return (
-        <button
-            type="submit"
-            disabled={pending}
-            className="px-4 py-2 rounded-xl border hover:shadow"
-        >
-            {pending ? 'Adding…' : 'Add'}
-        </button>
     );
 }
