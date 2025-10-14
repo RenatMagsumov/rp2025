@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-// type Note = { id: string; title: string; content?: string; created_at?: string };
 type ApiError = { error?: string };
 
 export function CreateNoteForm() {
@@ -23,7 +22,7 @@ export function CreateNoteForm() {
             const res = await fetch('/api/notes', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ title }), // при желании можно добавить content
+                body: JSON.stringify({ title }),
             });
 
             const json: unknown = await res.json();
@@ -39,7 +38,6 @@ export function CreateNoteForm() {
                 throw new Error(msg);
             }
 
-            // успешный кейс — обнуляем поле и рефрешим
             setTitle('');
             router.refresh();
         } catch (err: unknown) {
