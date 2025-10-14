@@ -1,11 +1,15 @@
 import { createClient } from '@/lib/supabase/server';
 import { CreateNoteForm } from './ui/CreateNoteForm';
 import { NotesList } from './ui/NotesList';
-import type { Note } from './ui/NotesList';
 import { updateNote } from './actions';
 
 export const revalidate = 0; // fetch fresh data
 
+type Note = {
+    id: string;
+    title: string;
+    created_at?: string;
+};
 
 async function getNotes(): Promise<Note[]> {
     const supabase = await createClient();
@@ -31,7 +35,6 @@ export default async function NotesPage() {
                 <CreateNoteForm />
                 <NotesList notes={notes} />
             </div>
-
             <div className="space-y-3">
                 <h2 className="text-lg font-semibold">Server-side inline edit (demo)</h2>
                 {(!notes || notes.length === 0) ? (
@@ -40,7 +43,7 @@ export default async function NotesPage() {
                     <ul className="space-y-2">
                         {notes.map((note) => (
                             <li key={note.id} className="border rounded-xl p-3">
-                                <form action={updateNote} className="flex gap-2 items-center w-full">
+                                <form action={updateNote} className="flex gap-2 items-center">
                                     <input type="hidden" name="id" defaultValue={note.id} />
                                     <input
                                         name="title"
