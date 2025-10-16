@@ -10,4 +10,5 @@ export function Providers({ children }: { children: ReactNode }) {
     return <MantineProvider>{children}</MantineProvider>;
 }
 
+
 export const ColorScheme = ColorSchemeScript;
