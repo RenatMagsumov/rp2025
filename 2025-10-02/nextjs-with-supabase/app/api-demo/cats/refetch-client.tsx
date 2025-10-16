@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Button, Text, Code } from "@mantine/core";
+import { Button, Paper, Stack, Text, Code } from "@mantine/core";
 
 type CatFact = { text: string; type: string; _id: string };
 
@@ -18,20 +18,28 @@ export default function ClientCatFact() {
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
             const data = (await res.json()) as CatFact;
             setFact(data);
-        } catch (e: any) {
-            setError(e?.message ?? "Request failed");
+        } catch (e: unknown) {
+            const message =
+                e instanceof Error ? e.message : "Request failed";
+            setError(message);
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <>
-            <Button onClick={getNewFact} loading={loading}>
-                Get new cat fact
-            </Button>
-            {error && <Code color="red" mt="sm">{error}</Code>}
-            {fact && <Text mt="sm"><strong>Client fact:</strong> {fact.text}</Text>}
-        </>
+        <Paper p="lg" radius="md" withBorder className="mt-6">
+            <Stack gap="sm">
+                <Button onClick={getNewFact} loading={loading}>
+                    Get new cat fact
+                </Button>
+                {error && <Code color="red">{error}</Code>}
+                {fact && (
+                    <Text>
+                        <strong>Client fact:</strong> {fact.text}
+                    </Text>
+                )}
+            </Stack>
+        </Paper>
     );
 }
