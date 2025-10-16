@@ -1,9 +1,18 @@
 "use client";
 
+import { Title, Container, Paper } from "@mantine/core";
+
+
 export default function KontaktPage() {
     return (
-        <div>
-            <h1>Kontakt</h1>
-        </div>
+        <Container size="sm" py="xl">
+            <Title order={2} mb="md">
+                Contact
+            </Title>
+
+            <Paper p="lg" radius="md" withBorder>
+                <p>Contact Form Here</p>
+            </Paper>
+        </Container>
     );
 }
