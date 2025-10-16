@@ -16,15 +16,17 @@ import { useForm } from "@mantine/form";
 import { z } from "zod";
 import dayjs from "dayjs";
 
-// Validation schema (English messages)
+import { createClient } from "@/lib/supabase/client";
+
+
 const schema = z.object({
-    first_name: z.string().min(2, "First name > 2 characters long"),
-    last_name: z.string().min(2, "Last name > 2 characters long"),
+    first_name: z.string().min(2, "First name must be at least 2 characters long"),
+    last_name: z.string().min(2, "Last name must be at least 2 characters long"),
     email: z.string().email("Invalid email address"),
     phone: z
         .string()
         .min(5, "Phone number is required")
-        .regex(/^[0-9+()\-.\s]+$/, "Please enter a valid phone number"),
+        .regex(/^[0-9+\(\)\-\.\s]+$/, "Please enter a valid phone number"),
     requested_at: z.date(),
     message: z.string().max(2000, "Maximum length is 2000 characters").optional(),
 });
@@ -33,6 +35,8 @@ type FormValues = z.infer<typeof schema>;
 
 export default function ContactPage() {
     const [submitted, setSubmitted] = useState<null | FormValues>(null);
+    const [loading, setLoading] = useState(false);
+    const [submitError, setSubmitError] = useState<string | null>(null);
 
     const form = useForm<FormValues>({
         initialValues: {
@@ -47,27 +51,43 @@ export default function ContactPage() {
         validate: (values) => {
             const parsed = schema.safeParse(values);
             if (parsed.success) return {};
-
             const { fieldErrors } = parsed.error.flatten();
-
-            // Provide friendly required message for requested_at when empty
             if (!values.requested_at) {
                 fieldErrors.requested_at = ["Date and time are required"];
             }
-
             return fieldErrors;
         },
     });
 
-    const handleSubmit = (values: FormValues) => {
-        console.log("Contact form submitted:", {
-            ...values,
-            requested_at_iso: dayjs(values.requested_at).toISOString(),
-        });
-        setSubmitted(values);
-        form.reset();
-    };
+    // ⬇️ ОБНОВЛЁННЫЙ submit: пишем прямо в Supabase (анонимно, по RLS)
+    const handleSubmit = async (values: FormValues) => {
+        setLoading(true);
+        setSubmitError(null);
+        try {
+            const supabase = createClient();
+            const payload = {
+                first_name: values.first_name,
+                last_name: values.last_name,
+                email: values.email,
+                phone: values.phone,
+                requested_at: dayjs(values.requested_at).toISOString(),
+                message: values.message ?? null,
+            };
 
+            const { error } = await supabase.from("contacts").insert(payload);
+            if (error) {
+                setSubmitError("Failed to save your message. Please try again.");
+                return;
+            }
+
+            setSubmitted(values);
+            form.reset();
+        } catch {
+            setSubmitError("Unexpected error. Please try again.");
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const handleDateChange = (d: Date | string | null) => {
         const asDate = d instanceof Date ? d : d ? new Date(d) : null;
@@ -81,34 +101,12 @@ export default function ContactPage() {
                 <form onSubmit={form.onSubmit(handleSubmit)}>
                     <Stack gap="md">
                         <Group grow>
-                            <TextInput
-                                label="First name"
-                                placeholder="John"
-                                required
-                                {...form.getInputProps("first_name")}
-                            />
-                            <TextInput
-                                label="Last name"
-                                placeholder="Doe"
-                                required
-                                {...form.getInputProps("last_name")}
-                            />
+                            <TextInput label="First name" placeholder="John" required {...form.getInputProps("first_name")} />
+                            <TextInput label="Last name" placeholder="Doe" required {...form.getInputProps("last_name")} />
                         </Group>
 
-                        <TextInput
-                            label="Email"
-                            type="email"
-                            placeholder="john@example.com"
-                            required
-                            {...form.getInputProps("email")}
-                        />
-
-                        <TextInput
-                            label="Phone number"
-                            placeholder="+372 5555 5555"
-                            required
-                            {...form.getInputProps("phone")}
-                        />
+                        <TextInput label="Email" type="email" placeholder="john@example.com" required {...form.getInputProps("email")} />
+                        <TextInput label="Phone number" placeholder="+1 555 123 4567" required {...form.getInputProps("phone")} />
 
                         <DateTimePicker
                             label="Date and time"
@@ -128,8 +126,13 @@ export default function ContactPage() {
                             {...form.getInputProps("message")}
                         />
 
-                        <Group justify="flex-start" mt="xs">
-                            <Button type="submit">Send</Button>
+                        <Group justify="flex-start" mt="xs" gap="md">
+                            <Button type="submit" loading={loading}>Send</Button>
+                            {submitError && (
+                                <div className="rounded-full bg-red-100 px-3 py-1 text-sm text-red-800">
+                                    {submitError}
+                                </div>
+                            )}
                         </Group>
                     </Stack>
                 </form>
