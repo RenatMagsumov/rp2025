@@ -1,3 +1,4 @@
+import { Container, Title, Paper, Text } from "@mantine/core";
 
 type CatFact = {
     text: string;
@@ -16,5 +17,14 @@ async function getCatFact(): Promise<CatFact> {
 export default async function CatFactsPage() {
     const fact = await getCatFact();
 
-    return <div>{fact.text}</div>;
+    return (
+        <Container size="sm" py="xl">
+            <Title order={2} mb="md">
+                Random Cat Fact (Server)
+            </Title>
+            <Paper p="lg" radius="md" withBorder>
+                <Text size="lg">{fact.text}</Text>
+            </Paper>
+        </Container>
+    );
 }
