@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { Button, Paper, Stack, Text, Code } from "@mantine/core";
 
-type CatFact = { text: string; type: string; _id: string };
+// ✅ новый тип
+type CatFact = { fact: string; length: number };
 
 export default function ClientCatFact() {
     const [fact, setFact] = useState<CatFact | null>(null);
@@ -14,13 +15,12 @@ export default function ClientCatFact() {
         setLoading(true);
         setError(null);
         try {
-            const res = await fetch("https://cat-fact.herokuapp.com/facts/random");
+            const res = await fetch("https://catfact.ninja/fact");
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
-            const data = (await res.json()) as CatFact;
+            const data: CatFact = await res.json();
             setFact(data);
         } catch (e: unknown) {
-            const message =
-                e instanceof Error ? e.message : "Request failed";
+            const message = e instanceof Error ? e.message : "Request failed";
             setError(message);
         } finally {
             setLoading(false);
@@ -36,7 +36,7 @@ export default function ClientCatFact() {
                 {error && <Code color="red">{error}</Code>}
                 {fact && (
                     <Text>
-                        <strong>Client fact:</strong> {fact.text}
+                        <strong>Client fact:</strong> {fact.fact}
                     </Text>
                 )}
             </Stack>
