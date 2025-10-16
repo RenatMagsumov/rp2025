@@ -1,14 +1,14 @@
 import { Container, Title, Paper, Text } from "@mantine/core";
 import ClientCatFact from "./refetch-client";
 
+// ✅ новый тип под catfact.ninja
 type CatFact = {
-    text: string;
-    type: string;
-    _id: string;
+    fact: string;
+    length: number;
 };
 
 async function getCatFact(): Promise<CatFact> {
-    const res = await fetch("https://cat-fact.herokuapp.com/facts/random", {
+    const res = await fetch("https://catfact.ninja/fact", {
         cache: "no-store",
     });
     if (!res.ok) throw new Error(`Failed to fetch cat fact: ${res.status}`);
@@ -20,14 +20,10 @@ export default async function CatFactsPage() {
 
     return (
         <Container size="sm" py="xl">
-            <Title order={2} mb="md">
-                Random Cat Fact (Server)
-            </Title>
+            <Title order={2} mb="md">Random Cat Fact (Server)</Title>
             <Paper p="lg" radius="md" withBorder>
-                <Text size="lg">{fact.text}</Text>
+                <Text size="lg">{fact.fact}</Text>
             </Paper>
-
-            {/* client side refetch */}
             <ClientCatFact />
         </Container>
     );
