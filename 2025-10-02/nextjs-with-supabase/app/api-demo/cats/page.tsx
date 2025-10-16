@@ -1,4 +1,5 @@
 import { Container, Title, Paper, Text } from "@mantine/core";
+import ClientCatFact from "./refetch-client";
 
 type CatFact = {
     text: string;
@@ -25,6 +26,9 @@ export default async function CatFactsPage() {
             <Paper p="lg" radius="md" withBorder>
                 <Text size="lg">{fact.text}</Text>
             </Paper>
+
+            {/* client side refetch */}
+            <ClientCatFact />
         </Container>
     );
 }
